@@ -3,12 +3,15 @@
 
 export const APP = 'Human Being';
 export const NS = 'tend';   // local storage prefix
-export const VERSION = '1.6';
+export const VERSION = '1.7';
 export const WEBSITE = 'https://turdlefish.github.io/human-being/';
 // What's new, by version, newest first. A phone that skipped versions sees
 // them all, 🔔 Tell sends your person everything after their version, and Us
 // lists every one.
 export const WHATS_NEW = {
+  '1.7': [
+    '✓ When the person who makes Human Being sorts one of your feedback notes, it ticks itself off here, sometimes with a reply',
+  ],
   '1.6': [
     '🔑 Make your space code longer (Us → Your person): everything is copied to the new code and nothing is deleted. Your other apps ask for the new code',
     'ℹ️ Us shows which version of Human Being you\'re using (Sync & backup)',

@@ -132,7 +132,9 @@ export const archiveDocs = () => {
   for (let y = 2026; y <= new Date().getFullYear(); y++) out.push('checkins-' + y);
   return out;
 };
-const allKeys = () => ['a', 'b'].flatMap(s => [...DOC_NAMES, ...archiveDocs()].map(d => full(keyFor(s, d))));
+// Slot "m" is the person who makes the app: their feedback inbox ticks notes
+// off in <ns>:<space>:p:m:feedback (see feedback.js). Read only, never written here.
+const allKeys = () => [...['a', 'b'].flatMap(s => [...DOC_NAMES, ...archiveDocs()].map(d => full(keyFor(s, d)))), full(keyFor('m', 'feedback'))];
 
 // Pull anything that changed on the server since we last looked.
 // Resolves true if the server was reached.
