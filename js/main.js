@@ -2,14 +2,16 @@
 
 import * as store from './store.js';
 import { CONFIG } from './config.js';
-import { $, $$, colorVars, esc, isDark, prefs, setTheme } from './util.js';
+import { $, $$, colorVars, copyText, esc, isDark, prefs, setTheme, toast } from './util.js';
 import { showOnboarding } from './onboarding.js';
 import { createToday } from './today.js';
 import { createMap } from './map.js';
 import { createPlan } from './plan.js';
 import { createUs } from './us.js';
 import { tray } from './sticker-ui.js';
-import { isNative, nativeTheme, startNative } from './native.js';
+import { isNative, nativeTheme, startNative, updateNativeSession } from './native.js';
+import { initMove } from './spacemove.js';
+import { openSheet } from './ui.js';
 import { avatarHTML } from './avatars.js';
 import { initCustom } from './custom.js';
 import { startNudges } from './nudges.js';
@@ -82,6 +84,15 @@ function startApp() {
   startNudges(store.startSync());
   setBionic(!!prefs.bionic, prefs.bionicLevel);
   startNative();
+  // A move to a longer space code: asks for the new code when another app made one (spacemove.js).
+  initMove({
+    ns: 'tend', app: 'Human Being', store, toast, copyText,
+    sheet: (title, body) => openSheet({ title, body }),
+    busy: () => !!document.querySelector('.sheet-wrap'),
+    myName: () => store.readMine('profile', {}).name,
+    after: () => { updateNativeSession(); route(); },
+    cls: { input: 'inp', code: 'code-pill big', actions: 'sheet-actions', primary: 'btn', ghost: 'btn ghost', err: 'ob-err' },
+  });
 }
 
 // Android back button: close the top sheet / sticker drawer / edit first.

@@ -78,9 +78,8 @@ function pushWidget() {
 
 export function startNative() {
   if (!bridge) return;
-  const s = store.getSession();
   // Lets the widget (and hug, boop and check-in notifications) refresh from the database while the app is closed.
-  bridge.setSession(JSON.stringify({ url: CONFIG.supabaseUrl, key: CONFIG.supabaseKey, table: CONFIG.table, space: s.space, slot: s.slot }));
+  updateNativeSession();
   if (bridge.enableHugAlerts) bridge.enableHugAlerts();
   pushWidget();
   const soon = debounce(pushWidget, 300);
@@ -93,4 +92,12 @@ export function startNative() {
 
 export function stopNative() {
   if (bridge) bridge.setSession('');
+}
+
+
+/** Tells the Android app which space to check while it's closed (again after a move to a new code). */
+export function updateNativeSession() {
+  if (!bridge) return;
+  const s = store.getSession();
+  bridge.setSession(JSON.stringify({ url: CONFIG.supabaseUrl, key: CONFIG.supabaseKey, table: CONFIG.table, space: s.space, slot: s.slot }));
 }

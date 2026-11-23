@@ -14,6 +14,7 @@ import { mountFeedback } from './feedback.js';
 import { openRemind } from './remind.js';
 import { openWhatsNew, tellWhatsNew, versionNote } from './nudges.js';
 import { APP, VERSION } from './about.js';
+import { isShortCode, startMove } from './spacemove.js';
 
 const STATUS_TEXT = {
   idle: 'Getting ready…',
@@ -89,6 +90,7 @@ export function createUs(root, { onTimeFormat, onTheme, onBionic } = {}) {
           <p>Invite your person so you can see each other's check-ins, self-care maps and plans.</p>`}
         <p class="muted small">Your space code</p>
         <div class="code-pill">${esc(sess.space)}</div>
+        ${isShortCode(sess.space) ? '<button type="button" class="btn ghost" data-act="longer-code">🔑 Make our code longer</button>' : ''}
         ${them ? '' : '<button type="button" class="btn" data-act="invite">Copy invite</button>'}
         ${canShare() && !them ? '<button type="button" class="btn ghost" data-act="share">Share…</button>' : ''}
         ${them ? `<button type="button" class="btn ghost remind-us" data-act="remind">👉 Remind ${esc(them.name)}…</button>${versionNote()}` : ''}
@@ -174,6 +176,7 @@ export function createUs(root, { onTimeFormat, onTheme, onBionic } = {}) {
       <section class="card" style="${colorVars('sky')}">
         <div class="card-tape"></div>
         <h3 class="card-title">Sync & backup</h3>
+        <p class="muted small app-ver">📱 You're using <b>${APP} ${VERSION}</b>, ${isNative ? 'the Android app' : 'the website'}.</p>
         <p class="sync-line" data-state="${status.state}"><span class="dot"></span><span id="u-status">${esc(STATUS_TEXT[status.state] || '')}</span></p>
         ${CONFIG.mock ? '<p class="muted small">Using the local test server (mock mode).</p>' : ''}
         <div class="btn-row">
@@ -256,6 +259,7 @@ export function createUs(root, { onTimeFormat, onTheme, onBionic } = {}) {
         break;
       }
       case 'remind': openRemind(); break;
+      case 'longer-code': startMove(); break;
       case 'whats-new': openWhatsNew(); break;
       case 'tell-new': tellWhatsNew(); break;
       case 'invite': {
