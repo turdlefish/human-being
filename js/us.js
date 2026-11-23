@@ -12,7 +12,8 @@ import { usSticker } from './icons.js';
 import { addFromFile, chooseShape, myItems, partnerItems, pickPhoto, removeMine } from './custom.js';
 import { mountFeedback } from './feedback.js';
 import { openRemind } from './remind.js';
-import { versionNote } from './nudges.js';
+import { openWhatsNew, tellWhatsNew, versionNote } from './nudges.js';
+import { APP, VERSION } from './about.js';
 
 const STATUS_TEXT = {
   idle: 'Getting ready…',
@@ -182,7 +183,7 @@ export function createUs(root, { onTimeFormat, onTheme, onBionic } = {}) {
         <button type="button" class="btn ghost danger-text" data-act="signout">Sign out on this device</button>
       </section>
 
-      <p class="footer-note">made with 💗 for two</p>`;
+      <p class="footer-note">made with 💗 for two<br><button type="button" class="link-btn" data-act="whats-new">📜 ${APP} ${VERSION}: every update</button></p>`;
     mountFeedback($('#u-fb', page));
   }
 
@@ -255,6 +256,8 @@ export function createUs(root, { onTimeFormat, onTheme, onBionic } = {}) {
         break;
       }
       case 'remind': openRemind(); break;
+      case 'whats-new': openWhatsNew(); break;
+      case 'tell-new': tellWhatsNew(); break;
       case 'invite': {
         const ok = await copyText(inviteText());
         toast(ok ? 'Invite copied — send it to your person 💌' : 'Could not copy — share the code instead');

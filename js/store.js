@@ -97,18 +97,21 @@ function setStatus(state) {
 }
 
 // ── Network ───────────────────────────────────────────────────────────────
-function headers(extra = {}) {
-  return { apikey: CONFIG.supabaseKey, Authorization: 'Bearer ' + CONFIG.supabaseKey, ...extra };
+// The database only shows (and takes) a space's rows when the request names
+// that space in its x-space header, so nobody can look through other couples'.
+function headers(extra = {}, space = session && session.space) {
+  return { apikey: CONFIG.supabaseKey, Authorization: 'Bearer ' + CONFIG.supabaseKey, ...(space ? { 'x-space': space } : {}), ...extra };
 }
-async function api(query, opts = {}) {
-  const r = await fetch(apiBase() + '/rest/v1/' + CONFIG.table + query, { ...opts, headers: headers(opts.headers) });
+// space: another space than yours (only when joining one).
+async function api(query, { space, ...opts } = {}) {
+  const r = await fetch(apiBase() + '/rest/v1/' + CONFIG.table + query, { ...opts, headers: headers(opts.headers, space) });
   if (!r.ok) throw new Error('HTTP ' + r.status + ' ' + (await r.text().catch(() => '')));
   return r;
 }
 const inList = fks => 'in.(' + fks.map(k => '"' + k + '"').join(',') + ')';
 
-async function fetchDocs(fks) {
-  const r = await api('?select=key,value,updated_at&key=' + encodeURIComponent(inList(fks)));
+async function fetchDocs(fks, space) {
+  const r = await api('?select=key,value,updated_at&key=' + encodeURIComponent(inList(fks)), { space });
   const rows = await r.json();
   return rows.map(row => {
     let v = row.value;
@@ -244,7 +247,7 @@ export const normalizeCode = s => String(s || '').toLowerCase().trim().replace(/
 // Who's already in a space? Returns { a?: profile, b?: profile }.
 export async function peekSpace(code) {
   const fks = ['a', 'b'].map(s => full(keyFor(s, 'profile'), code));
-  const rows = await fetchDocs(fks);
+  const rows = await fetchDocs(fks, code);
   const out = {};
   rows.forEach(r => {
     const slot = r.key.split(':')[3];

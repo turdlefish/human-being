@@ -35,7 +35,7 @@ async function load() {
     ["profile", "checkins", "hugs"].forEach(function (d) { keys.push('"tend:' + SPACE + ":p:" + s + ":" + d + '"'); });
   });
   const req = new Request(SB_URL + "/rest/v1/tb_store?select=key,value&key=" + encodeURIComponent("in.(" + keys.join(",") + ")"));
-  req.headers = { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY };
+  req.headers = { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY, "x-space": SPACE };
   const today = dayKey(new Date());
   try {
     const rows = await req.loadJSON();
