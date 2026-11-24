@@ -2,7 +2,7 @@
 // away), cached copy when offline. Database calls always go to the network —
 // the app keeps its own offline copy in localStorage.
 
-const CACHE = 'tend-v14';
+const CACHE = 'tend-v15';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './css/app.css',
   './js/main.js', './js/config.js', './js/util.js', './js/ui.js', './js/store.js',
