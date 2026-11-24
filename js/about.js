@@ -3,12 +3,16 @@
 
 export const APP = 'Human Being';
 export const NS = 'tend';   // local storage prefix
-export const VERSION = '1.10';
+export const VERSION = '1.11';
 export const WEBSITE = 'https://turdlefish.github.io/human-being/';
 // What's new, by version, newest first. A phone that skipped versions sees
 // them all, 🔔 Tell sends your person everything after their version, and Us
 // lists every one.
 export const WHATS_NEW = {
+  '1.11': [
+    '✈️ A Travel sticker pack: plane, suitcase, passport, map, globe, palm tree, beach umbrella, ticket, hot air balloon and car',
+    '📷 Your own photo stickers now fit neatly on an event (they were far too big)',
+  ],
   '1.10': [
     '🏷️ An event can have an emoji and a sticker. Show its name, its emoji, its sticker, or the name with either one: for the whole plan (⚙) or event by event',
   ],
