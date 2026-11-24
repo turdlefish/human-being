@@ -3,12 +3,15 @@
 
 export const APP = 'Human Being';
 export const NS = 'tend';   // local storage prefix
-export const VERSION = '1.9';
+export const VERSION = '1.10';
 export const WEBSITE = 'https://turdlefish.github.io/human-being/';
 // What's new, by version, newest first. A phone that skipped versions sees
 // them all, 🔔 Tell sends your person everything after their version, and Us
 // lists every one.
 export const WHATS_NEW = {
+  '1.10': [
+    '🏷️ An event can have an emoji and a sticker. Show its name, its emoji, its sticker, or the name with either one: for the whole plan (⚙) or event by event',
+  ],
   '1.9': [
     '🗓️ Plan: events show just their name and icon, no times (tap one for those). Pick name, icon or both in the plan\'s ⚙',
     '🏷️ Stick a sticker on an event instead of an emoji. The little icon picker folds away until you need it',
