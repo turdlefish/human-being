@@ -131,6 +131,9 @@ export function toast(msg, action) {
   toastTimer = setTimeout(() => el.classList.remove('show'), action ? 5000 : 2600);
 }
 
+// Start-up steps that failed on this phone ("phone: …"), listed on Us so they can be reported.
+export const startProblems = [];
+
 export function vibrate(ms = 10) {
   try {
     if (window.TendNative) window.TendNative.vibrate(ms);

@@ -2,7 +2,7 @@
 
 import * as store from './store.js';
 import { CONFIG } from './config.js';
-import { $, $$, colorVars, copyText, esc, isDark, prefs, setTheme, toast } from './util.js';
+import { $, $$, colorVars, copyText, esc, isDark, prefs, setTheme, startProblems, toast } from './util.js';
 import { showOnboarding } from './onboarding.js';
 import { createToday } from './today.js';
 import { createMap } from './map.js';
@@ -80,19 +80,26 @@ function startApp() {
   store.on(k => { if (k.endsWith(':profile')) renderTopbar(); });
   store.onStatus(renderSync);
   renderTopbar();
-  route();
-  startNudges(store.startSync());
-  setBionic(!!prefs.bionic, prefs.bionicLevel);
-  startNative();
   // A move to a longer space code: asks for the new code when another app made one (spacemove.js).
+  // Set up before anything below, so nothing that fails there can stop it.
   initMove({
     ns: 'tend', app: 'Human Being', store, toast, copyText,
     sheet: (title, body) => openSheet({ title, body }),
     busy: () => !!document.querySelector('.sheet-wrap'),
     myName: () => store.readMine('profile', {}).name,
-    after: () => { updateNativeSession(); route(); },
+    after: () => { safely('phone', updateNativeSession); safely('screen', route); },
     cls: { input: 'inp', code: 'code-pill big', actions: 'sheet-actions', primary: 'btn', ghost: 'btn ghost', err: 'ob-err' },
   });
+  const synced = store.startSync();
+  // Each start-up step on its own: one that fails doesn't stop the others (Us lists any that did).
+  safely('messages', () => startNudges(synced));
+  safely('bionic', () => setBionic(!!prefs.bionic, prefs.bionicLevel));
+  safely('phone', startNative);
+  safely('screen', route);
+}
+
+function safely(what, fn) {
+  try { fn(); } catch (e) { console.error(e); startProblems.push(`${what}: ${(e && e.message) || e}`); }
 }
 
 // Android back button: close the top sheet / sticker drawer / edit first.

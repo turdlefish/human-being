@@ -3,7 +3,7 @@
 
 import * as store from './store.js';
 import { CONFIG } from './config.js';
-import { $, colorVars, copyText, dayKey, esc, prefs, setPref, toast } from './util.js';
+import { $, colorVars, copyText, dayKey, esc, prefs, setPref, startProblems, toast } from './util.js';
 import { confirmSheet, swatchesHTML } from './ui.js';
 import { inviteText } from './today.js';
 import { canShare, isNative, shareText, stopNative } from './native.js';
@@ -177,6 +177,7 @@ export function createUs(root, { onTimeFormat, onTheme, onBionic } = {}) {
         <div class="card-tape"></div>
         <h3 class="card-title">Sync & backup</h3>
         <p class="muted small app-ver">📱 You're using <b>${APP} ${VERSION}</b>, ${isNative ? 'the Android app' : 'the website'}.</p>
+        ${startProblems.length ? `<p class="ver-note start-note">⚠️ Part of the app didn't start properly on this phone: ${esc(startProblems.join(' · '))}. Closing and reopening the app may help. If it keeps happening, send this line in 💭 Feedback.</p>` : ''}
         <p class="sync-line" data-state="${status.state}"><span class="dot"></span><span id="u-status">${esc(STATUS_TEXT[status.state] || '')}</span></p>
         ${CONFIG.mock ? '<p class="muted small">Using the local test server (mock mode).</p>' : ''}
         <div class="btn-row">
@@ -259,7 +260,9 @@ export function createUs(root, { onTimeFormat, onTheme, onBionic } = {}) {
         break;
       }
       case 'remind': openRemind(); break;
-      case 'longer-code': startMove(); break;
+      case 'longer-code':
+        startMove().catch(err => { console.error(err); toast(`Couldn't start the move (${(err && err.message) || err}). Nothing has changed.`); });
+        break;
       case 'whats-new': openWhatsNew(); break;
       case 'tell-new': tellWhatsNew(); break;
       case 'invite': {

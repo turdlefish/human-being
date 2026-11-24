@@ -3,7 +3,7 @@
 
 import * as store from './store.js';
 import { CONFIG } from './config.js';
-import { dayKey, debounce } from './util.js';
+import { dayKey, debounce, startProblems } from './util.js';
 import { avatarId } from './avatars.js';
 import { checkinMoods, moodOf } from './moods.js';
 import { helpTagLabel } from './help.js';
@@ -78,16 +78,26 @@ function pushWidget() {
 
 export function startNative() {
   if (!bridge) return;
-  // Lets the widget (and hug, boop and check-in notifications) refresh from the database while the app is closed.
-  updateNativeSession();
-  if (bridge.enableHugAlerts) bridge.enableHugAlerts();
-  pushWidget();
-  const soon = debounce(pushWidget, 300);
+  const widget = () => step('widget', pushWidget);
+  const soon = debounce(widget, 300);
   store.on(k => { if (/:(profile|checkins|hugs|boops)$/.test(k)) soon(); });
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') { soon.flush(); pushWidget(); }
+    if (document.visibilityState === 'hidden') { soon.flush(); widget(); }
   });
-  window.tendPushWidget = () => { soon.flush(); pushWidget(); };   // called by the app when it goes to the background
+  window.tendPushWidget = () => { soon.flush(); widget(); };   // called by the app when it goes to the background
+  // Lets the widget (and hug, boop and check-in notifications) refresh from the database while the app is closed.
+  step('session', updateNativeSession);
+  step('alerts', () => { if (bridge.enableHugAlerts) bridge.enableHugAlerts(); });
+  widget();
+}
+
+// One phone step; if it fails, the others still run, and Us lists it (once).
+function step(what, fn) {
+  try { fn(); } catch (e) {
+    console.error(e);
+    const line = `${what}: ${(e && e.message) || e}`;
+    if (!startProblems.includes(line)) startProblems.push(line);
+  }
 }
 
 export function stopNative() {

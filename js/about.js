@@ -3,12 +3,15 @@
 
 export const APP = 'Human Being';
 export const NS = 'tend';   // local storage prefix
-export const VERSION = '1.11';
+export const VERSION = '1.12';
 export const WEBSITE = 'https://turdlefish.github.io/human-being/';
 // What's new, by version, newest first. A phone that skipped versions sees
 // them all, 🔔 Tell sends your person everything after their version, and Us
 // lists every one.
 export const WHATS_NEW = {
+  '1.12': [
+    '🔑 "Make our code longer" works in the Android app again (on some phones it did nothing)',
+  ],
   '1.11': [
     '✈️ A Travel sticker pack: plane, suitcase, passport, map, globe, palm tree, beach umbrella, ticket, hot air balloon and car',
     '📷 Your own photo stickers now fit neatly on an event (they were far too big)',
