@@ -16,6 +16,7 @@ import { avatarHTML } from './avatars.js';
 import { initCustom } from './custom.js';
 import { startNudges } from './nudges.js';
 import { setBionic } from './bionic.js';
+import { closeTour, initGuide, offerTour } from './guide.js';
 
 const views = {};
 let current = null;
@@ -80,6 +81,7 @@ function startApp() {
   store.on(k => { if (k.endsWith(':profile')) renderTopbar(); });
   store.onStatus(renderSync);
   renderTopbar();
+  initGuide();   // ? in the top bar: the tour and the guide
   // A move to a longer space code: asks for the new code when another app made one (spacemove.js).
   // Set up before anything below, so nothing that fails there can stop it.
   initMove({
@@ -96,6 +98,7 @@ function startApp() {
   safely('bionic', () => setBionic(!!prefs.bionic, prefs.bionicLevel));
   safely('phone', startNative);
   safely('screen', route);
+  safely('guide', offerTour);   // someone new: a quick tour, offered once
 }
 
 function safely(what, fn) {
@@ -104,6 +107,7 @@ function safely(what, fn) {
 
 // Android back button: close the top sheet / sticker drawer / edit first.
 window.tendBack = () => {
+  if (closeTour()) return true;
   const sheets = document.querySelectorAll('.sheet-wrap.open');
   if (sheets.length) { sheets[sheets.length - 1].querySelector('.sheet-x').click(); return true; }
   if (tray.target) { tray.close(); return true; }

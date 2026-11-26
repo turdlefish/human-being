@@ -1,5 +1,5 @@
 // Today: each partner's daily check-in — the need taking up the most brain
-// space and how big it is, how they slept, how tired they are, how many spoons
+// space and how big it is, how they slept (and for how many hours), how tired they are, how many spoons
 // they have, what kind of support would help and their moods — side by side.
 // You can hug your person, or boop them as a gentle reminder to check in.
 
@@ -31,6 +31,29 @@ const SCALES = {
   tired: { words: TIRED_WORDS, color: 'sky', ask: '🥱 How tired are you?', show: '🥱 Tiredness', ends: ['wide awake', 'exhausted'] },
   spoons: { words: SPOON_WORDS, color: 'peach', ask: '🥄 How many spoons do you have today?', show: '🥄 Spoons', ends: ['running on empty', 'plenty to share'] },
 };
+// Hours slept (sleepHours), under the sleep rating: − and + go half an hour at
+// a time (from HOURS_START when it's empty), or type "7.5", "7½", "6:45", "6h30".
+const HOURS_START = 7;
+const FRAC = ['', '¼', '½', '¾'];
+const hasHours = c => !!c && typeof c.sleepHours === 'number';
+/** 7.5 → "7½" */
+export function fmtHours(h) {
+  const q = Math.round(h * 4), w = Math.floor(q / 4), f = FRAC[q % 4];
+  return (w || !f ? String(w) : '') + f;
+}
+const hoursWord = h => `${fmtHours(h)} ${h === 1 ? 'hour' : 'hours'}`;
+// What was typed, as hours to the quarter: a number, null when it's empty, or undefined when it isn't a time.
+function parseHours(v) {
+  const s = String(v || '').trim().toLowerCase().replace(',', '.')
+    .replace(/\s*¼/g, '.25').replace(/\s*½/g, '.5').replace(/\s*¾/g, '.75');
+  if (!s) return null;
+  let h = NaN, m;
+  if (/^\d*\.?\d+$/.test(s)) h = Number(s);
+  else if ((m = /^(\d{1,2})\s*(?:h|hrs?|hours?|:)\s*(?:(\d{1,2})\s*(?:m|mins?|minutes?)?)?$/.exec(s))) h = Number(m[1]) + (m[2] ? Number(m[2]) / 60 : 0);
+  else if ((m = /^(\d{1,3})\s*(?:m|mins?|minutes?)$/.exec(s))) h = Number(m[1]) / 60;
+  if (!Number.isFinite(h)) return undefined;
+  return Math.min(24, Math.max(0, Math.round(h * 4) / 4));
+}
 const STRIP_CHUNK = 120;   // days added to the day strip at a time
 const BOOP_GAP = 30 * 60 * 1000;   // one boop per half hour, so it stays a nudge
 
@@ -56,7 +79,7 @@ function dots(n, editable) {
 
 const readout = (n, words) => (n ? `<b>${n}</b>/10 · ${esc(words[n])}` : '<span class="muted">tap a number</span>');
 
-const isEmpty = c => !c || (!c.need && !c.support && !c.rating && !c.sleep && !c.tired && !c.spoons && !c.spoonsNote
+const isEmpty = c => !c || (!c.need && !c.support && !c.rating && !c.sleep && !hasHours(c) && !c.tired && !c.spoons && !c.spoonsNote
   && !(c.tags && c.tags.length) && !c.mood && !(c.moods && c.moods.length));
 
 export function createToday(root) {
@@ -205,14 +228,16 @@ export function createToday(root) {
   }, { passive: true });
 
   // ── a check-in as a read-only card body (partner's, or mine once done) ──
-  function scaleView(key, n) {
+  function scaleView(key, n, extra = '') {
     const s = SCALES[key];
     return `<div class="rating-view"${s.color ? ` style="${colorVars(s.color)}"` : ''}>
       <span class="rv-label">${s.show}</span>
-      <div class="rdots">${dots(n, false)}</div>
-      <span><b>${n}</b>/10 · ${esc(s.words[n])}</span>
+      ${n ? `<div class="rdots">${dots(n, false)}</div>
+      <span><b>${n}</b>/10 · ${esc(s.words[n])}</span>` : ''}${extra}
     </div>`;
   }
+  // Sleep: the rating, and the hours under it (either can be on its own).
+  const sleepView = c => scaleView('sleep', c.sleep || 0, hasHours(c) ? `<span class="rv-hours">🛏️ ${hoursWord(c.sleepHours)} of sleep</span>` : '');
 
   function checkinBody(c, mine) {
     const owner = mine ? myProfile() : theirProfile();
@@ -221,7 +246,7 @@ export function createToday(root) {
     return `
       ${c.need ? `<p class="need-quote">“${esc(c.need)}”</p>` : ''}
       ${c.rating ? scaleView('rating', c.rating) : ''}
-      ${c.sleep ? scaleView('sleep', c.sleep) : ''}
+      ${c.sleep || hasHours(c) ? sleepView(c) : ''}
       ${c.tired ? scaleView('tired', c.tired) : ''}
       ${c.spoons ? scaleView('spoons', c.spoons) : ''}
       ${c.spoonsNote ? `<p class="spoons-note" style="${colorVars('peach')}">🥄 ${esc(c.spoonsNote)}</p>` : ''}
@@ -234,14 +259,40 @@ export function createToday(root) {
   function scaleHTML(key, c) {
     const s = SCALES[key];
     const id = 'sc-' + key;
-    return `<section class="q-block"${s.color ? ` style="${colorVars(s.color)}"` : ''}>
+    return `<section class="q-block" data-q="${key}"${s.color ? ` style="${colorVars(s.color)}"` : ''}>
       <div class="q q-row" id="${id}-q">${s.ask} <span class="rating-read" data-read="${key}">${readout(c[key], s.words)}</span></div>
       <div class="rating" role="group" aria-labelledby="${id}-q" data-scale="${key}">${dots(c[key], true)}</div>
       <div class="rating-ends"><span>${s.ends[0]}</span><span>${s.ends[1]}</span></div>
       ${key === 'spoons' ? `
         <label class="q sub" for="ci-spoons">What do you have spoons for today? <span class="muted">(optional)</span></label>
         <textarea id="ci-spoons" class="inp" rows="2" maxlength="300" placeholder="e.g. enough spoons to play games together, but not for cooking dinner">${esc(c.spoonsNote || '')}</textarea>` : ''}
+      ${key === 'sleep' ? hoursHTML(c.sleepHours) : ''}
     </section>`;
+  }
+
+  // "How many hours did you sleep?"  − 7½ hours +
+  function hoursHTML(h) {
+    const set = typeof h === 'number';
+    return `
+      <div class="q sub q-row hrs-q"><label for="ci-hours">How many hours did you sleep? <span class="muted">(optional)</span></label>
+        <button type="button" class="link-btn hrs-clear" data-act="hours-clear"${set ? '' : ' hidden'}>clear</button></div>
+      <div class="hrs" role="group" aria-label="Hours slept">
+        <button type="button" class="hrs-btn" data-hrs="-1" aria-label="Half an hour less">−</button>
+        <label class="hrs-val" for="ci-hours"><input id="ci-hours" class="hrs-inp" inputmode="decimal" maxlength="6" autocomplete="off" enterkeyhint="done" value="${set ? fmtHours(h) : ''}" placeholder="–"><span class="hrs-unit">${set && h === 1 ? 'hour' : 'hours'}</span></label>
+        <button type="button" class="hrs-btn" data-hrs="1" aria-label="Half an hour more">+</button>
+      </div>`;
+  }
+
+  // Saves hours slept and updates the stepper (typed: leave the box as it is).
+  function setHours(h, typed = false) {
+    patchMine({ sleepHours: h });
+    const inp = $('#ci-hours', root);
+    if (inp && !typed) inp.value = h == null ? '' : fmtHours(h);
+    const unit = $('.hrs-unit', root);
+    if (unit) unit.textContent = h === 1 ? 'hour' : 'hours';
+    const clear = $('.hrs-clear', root);
+    if (clear) clear.hidden = h == null;
+    refreshDots();
   }
 
   // "Feeling unwell, anxious" beside the Mood question.
@@ -457,7 +508,8 @@ export function createToday(root) {
   const saveNeed = debounce(v => patchMine({ need: v }), 350);
   const saveSupport = debounce(v => patchMine({ support: v }), 350);
   const saveSpoons = debounce(v => patchMine({ spoonsNote: v }), 350);
-  const flushTyping = () => { saveNeed.flush(); saveSupport.flush(); saveSpoons.flush(); };
+  const saveHours = debounce(v => setHours(v, true), 450);
+  const flushTyping = () => { saveNeed.flush(); saveSupport.flush(); saveSpoons.flush(); saveHours.flush(); };
 
   // ── partner card ───────────────────────────────────────────────────────
   function renderThem() {
@@ -521,6 +573,7 @@ export function createToday(root) {
         ${isEmpty(c) ? '<span class="muted">—</span>' : `
           ${c.rating ? `<span class="hist-r" title="Brain space">🧠${c.rating}</span>` : ''}
           ${c.sleep ? `<span class="hist-r" title="Sleep" style="${colorVars('lavender')}">🌙${c.sleep}</span>` : ''}
+          ${hasHours(c) ? `<span class="hist-r" title="Hours slept" style="${colorVars('lavender')}">🛏️${fmtHours(c.sleepHours)}h</span>` : ''}
           ${c.tired ? `<span class="hist-r" title="Tiredness" style="${colorVars('sky')}">🥱${c.tired}</span>` : ''}
           ${c.spoons ? `<span class="hist-r" title="Spoons" style="${colorVars('peach')}">🥄${c.spoons}</span>` : ''}
           <span class="hist-t">${esc(c.need || (c.tags || []).map(id => helpTagLabel(id, p)).filter(Boolean).join(', ') || '')}</span>`}
@@ -557,9 +610,17 @@ export function createToday(root) {
     if (e.target.id === 'ci-need') saveNeed(e.target.value.trim());
     else if (e.target.id === 'ci-support') saveSupport(e.target.value.trim());
     else if (e.target.id === 'ci-spoons') saveSpoons(e.target.value.trim());
+    else if (e.target.id === 'ci-hours') { const h = parseHours(e.target.value); if (h !== undefined) saveHours(h); }
   });
   root.addEventListener('focusout', e => {
-    if (['ci-need', 'ci-support', 'ci-spoons'].includes(e.target.id)) flushTyping();
+    if (['ci-need', 'ci-support', 'ci-spoons', 'ci-hours'].includes(e.target.id)) flushTyping();
+    if (e.target.id === 'ci-hours') {   // tidy what was typed: "7.5" shows as 7½
+      const h = myCheckins()[day]?.sleepHours;
+      e.target.value = typeof h === 'number' ? fmtHours(h) : '';
+    }
+  });
+  root.addEventListener('keydown', e => {
+    if (e.target.id === 'ci-hours' && e.key === 'Enter') { e.preventDefault(); e.target.blur(); }
   });
 
   root.addEventListener('click', async e => {
@@ -574,6 +635,17 @@ export function createToday(root) {
       row.innerHTML = dots(next, true);
       $(`[data-read="${key}"]`, root).innerHTML = readout(next, SCALES[key].words);
       refreshDots();
+      return;
+    }
+    const hb = t.closest('.me-card [data-hrs]');
+    if (hb) {
+      saveHours.flush();
+      const cur = myCheckins()[day]?.sleepHours;
+      const up = hb.dataset.hrs === '1';
+      // Half an hour at a time, to the next half hour after a typed 6¾.
+      const next = typeof cur !== 'number' ? HOURS_START
+        : Math.min(24, Math.max(0, (up ? Math.floor(cur * 2 + 1) : Math.ceil(cur * 2 - 1)) / 2));
+      setHours(next);
       return;
     }
     const chip = t.closest('.me-card .chip');
@@ -612,6 +684,9 @@ export function createToday(root) {
       openOwnHelp();
     } else if (act === 'own-mood') {
       openOwnMood();
+    } else if (act === 'hours-clear') {
+      saveHours.flush();
+      setHours(null);
     } else if (act === 'go-today') {
       setDay(dayKey());
     } else if (act === 'more-moods') {
@@ -673,7 +748,7 @@ export function createToday(root) {
     } else if (k === store.keyFor(p, 'boops')) {
       checkForBoop();
     } else if (k.startsWith('p:' + m + ':')) {
-      const typing = document.activeElement && root.contains(document.activeElement) && document.activeElement.tagName === 'TEXTAREA';
+      const typing = document.activeElement && root.contains(document.activeElement) && ['TEXTAREA', 'INPUT'].includes(document.activeElement.tagName);
       if (!typing) { renderCards(); refreshDots(); }
     }
   });

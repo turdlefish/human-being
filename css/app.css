@@ -923,6 +923,23 @@ details.more p { margin-top: 8px; line-height: 1.5; }
 .mood-line { margin-top: 16px; color: var(--ink-soft); font-weight: 700; display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; }
 .mood-pick { display: inline-flex; align-items: center; color: var(--ink); }
 .spoons-note { margin: 10px 0 0; padding: 10px 13px; border-radius: 14px; background: var(--c-bg); color: var(--ink); font-weight: 600; line-height: 1.4; }
+/* Hours slept, under the sleep rating:  − 7½ hours + */
+.hrs-q { align-items: center; margin-bottom: 10px; }
+.hrs-q label { flex: 1; min-width: 0; }
+.hrs-clear { margin: 0; padding: 2px 4px; font-size: 12.5px; }
+.hrs { display: flex; align-items: center; justify-content: center; gap: 14px; }
+.hrs-btn {
+  flex: none; width: 44px; height: 44px; padding: 0; border-radius: 50%; border: 2px solid var(--c-mid); background: var(--surface);
+  box-shadow: 0 1px 0 var(--c-mid); color: var(--c-ink); font: 600 24px/1 var(--font-display); display: grid; place-items: center;
+}
+.hrs-btn:active { transform: translateY(1px); }
+.hrs-val { display: flex; align-items: baseline; justify-content: center; gap: 6px; min-width: 128px; padding: 6px 14px; border-radius: 14px; background: var(--c-bg); cursor: text; }
+.hrs-inp { width: 3ch; padding: 0; border: 0; outline: none; background: none; text-align: right; font: 600 24px var(--font-display); color: var(--c-ink); }
+@supports (field-sizing: content) { .hrs-inp { width: auto; min-width: 1ch; field-sizing: content; } }
+.hrs-inp::placeholder { color: var(--ink-faint); }
+.hrs-val:focus-within { box-shadow: 0 0 0 2px var(--c); }
+.hrs-unit { font: 700 13px var(--font-ui); color: var(--c-ink); }
+.rv-hours { flex-basis: 100%; color: var(--ink); font-weight: 700; }
 .done-btn { margin-top: 24px; }
 .edit-btn { width: 100%; margin-top: 20px; }
 .me-card.viewing .need-quote { margin-top: 2px; }

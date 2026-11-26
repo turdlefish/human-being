@@ -2,12 +2,12 @@
 // away), cached copy when offline. Database calls always go to the network —
 // the app keeps its own offline copy in localStorage.
 
-const CACHE = 'tend-v19';
+const CACHE = 'tend-v20';
 const SHELL = [
-  './', './index.html', './manifest.webmanifest', './css/app.css',
+  './', './index.html', './manifest.webmanifest', './css/app.css', './css/guide.css',
   './js/main.js', './js/config.js', './js/util.js', './js/ui.js', './js/store.js',
   './js/stickers.js', './js/sticker-ui.js', './js/today.js', './js/map.js', './js/plan.js',
-  './js/us.js', './js/widget.js', './js/onboarding.js', './js/native.js', './js/avatars.js', './js/moods.js', './js/custom.js', './js/gifts.js', './js/bionic.js', './js/icons.js', './js/help.js', './js/checkins.js', './js/richtext.js', './js/feedback.js', './js/about.js', './js/nudges.js', './js/spacemove.js', './js/remind.js',
+  './js/us.js', './js/widget.js', './js/onboarding.js', './js/native.js', './js/avatars.js', './js/moods.js', './js/custom.js', './js/gifts.js', './js/bionic.js', './js/icons.js', './js/help.js', './js/checkins.js', './js/richtext.js', './js/feedback.js', './js/about.js', './js/nudges.js', './js/spacemove.js', './js/remind.js', './js/guide.js', './js/guidetext.js',
   './icons/icon.svg', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png',
 ];
 
