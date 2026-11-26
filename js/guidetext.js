@@ -1,5 +1,6 @@
 // Human Being's words for the tour and the guide (guide.js shows them).
 // A tour step: { tab?, at?: [selectors, first one on show wins], title, text, when? }
+// (site: true is the website step: guide.js gives it its words and Open ↗ / 📋 Copy link.)
 // (title and text can be functions; they're HTML, so names go through esc).
 // A guide section: { icon, title, sub, color, tab?, tabName?, items: [HTML] }.
 
@@ -72,6 +73,7 @@ export const TOUR = [
     title: 'Us',
     text: () => `Your name, colour and character, your space code, <b>👉 reminders</b> for ${their()}, photo stickers, the home-screen widget, pastel or galaxy, and <b>💭 app feedback</b>.`,
   },
+  { tab: 'us', at: ['#u-site'], site: true },
   {
     at: ['#help-btn'],
     title: 'Help is always here',
@@ -127,7 +129,7 @@ export const GUIDE = {
         '📱 <b>On your home screen</b>: how to add the app and the check-in widget (Android, or iPhone through the Scriptable app).',
         '🎨 <b>Preferences</b>: 🌷 pastel or 🌌 galaxy, bionic reading (bolds the start of each word), and 12- or 24-hour time.',
         '💭 <b>App feedback</b>: notes on what to fix or add, ticked off together. The person who makes Human Being reads them too.',
-        '☁️ <b>Sync & backup</b>: sync now, save a copy of your data, and see which version you have. <b>📜 Every update</b> is at the very bottom.',
+        '☁️ <b>Sync & backup</b>: sync now, save a copy of your data, see which version you have, and the website\'s link (🌐 open it, or 📋 copy it). <b>📜 Every update</b> is at the very bottom.',
       ],
     },
     {
@@ -145,7 +147,7 @@ export const GUIDE = {
         '🔐 Only phones with your space code can see your check-ins, maps and plans.',
         '📲 Got a new phone? Choose <b>I have a code</b> and pick yourself to sign in.',
         '📋 <b>Human Doing</b>, the sister app, uses the same code for trackers, to-dos and plans.',
-        '💻 Human Being also works as a website, laid out wide on a computer.',
+        '💻 Human Being also works as a website (its link is at the top of this guide, and on Us), laid out wide on a computer. Use your space code there and it syncs with the app both ways.',
       ],
     },
   ],
